@@ -1,0 +1,223 @@
+{
+  "product": {
+    "productId": "GBVCS001",
+    "productName": "GlowBoost Vitamin C Serum",
+    "brand": {
+      "name": "RadiantLabs",
+      "logoUrl": "https://example.com/images/radiantlabs-logo.png",
+      "websiteUrl": "https://example.com/radiantlabs"
+    },
+    "category": {
+      "main": "Skincare",
+      "subCategory": "Serums",
+      "type": "Face Serum"
+    },
+    "sku": "RL-GBVCS-30ML-01",
+    "upc": "8765432109876",
+    "price": {
+      "currency": "USD",
+      "amount": 39.99,
+      "compareAtAmount": 49.99,
+      "isOnSale": true,
+      "discountPercentage": 20
+    },
+    "availability": {
+      "inStock": true,
+      "quantity": 250,
+      "estimatedRestockDate": null
+    },
+    "shortDescription": "Unlock radiant, youthful skin with our potent GlowBoost Vitamin C Serum. Formulated with 20% L-Ascorbic Acid, Hyaluronic Acid, and Vitamin E to brighten, firm, and protect.",
+    "description": "Transform your complexion with RadiantLabs GlowBoost Vitamin C Serum. This advanced formula delivers a powerful dose of 20% L-Ascorbic Acid, a highly stable and effective form of Vitamin C, known for its exceptional antioxidant properties. It works tirelessly to combat free radicals, reduce the appearance of fine lines and wrinkles, and significantly brighten skin tone.\n\nInfused with hydrating Hyaluronic Acid, it plumps the skin and locks in moisture, while Vitamin E and Ferulic Acid enhance Vitamin C's efficacy and provide additional environmental protection. Experience a visible reduction in dark spots, improved skin texture, and a luminous, youthful glow. Suitable for all skin types, our serum is cruelty-free, paraben-free, and vegan.",
+    "images": [
+      {
+        "url": "https://example.com/images/glowboost/serum-front.jpg",
+        "altText": "GlowBoost Vitamin C Serum glass bottle with dropper, front view",
+        "isHero": true
+      },
+      {
+        "url": "https://example.com/images/glowboost/serum-texture.jpg",
+        "altText": "Close-up of GlowBoost Vitamin C Serum texture on skin",
+        "isHero": false
+      },
+      {
+        "url": "https://example.com/images/glowboost/serum-ingredients.jpg",
+        "altText": "GlowBoost Vitamin C Serum bottle showing key ingredients",
+        "isHero": false
+      },
+      {
+        "url": "https://example.com/images/glowboost/serum-lifestyle.jpg",
+        "altText": "Woman applying GlowBoost Vitamin C Serum to her face",
+        "isHero": false
+      },
+      {
+        "url": "https://example.com/images/glowboost/serum-packaging.jpg",
+        "altText": "GlowBoost Vitamin C Serum in its retail box",
+        "isHero": false
+      }
+    ],
+    "specifications": [
+      {
+        "name": "Volume",
+        "value": "30ml / 1 fl oz"
+      },
+      {
+        "name": "Key Ingredients",
+        "value": "20% L-Ascorbic Acid, Hyaluronic Acid, Vitamin E, Ferulic Acid"
+      },
+      {
+        "name": "Skin Type",
+        "value": "All Skin Types"
+      },
+      {
+        "name": "Formulation",
+        "value": "Liquid Serum"
+      },
+      {
+        "name": "Cruelty-Free",
+        "value": "Yes"
+      },
+      {
+        "name": "Vegan",
+        "value": "Yes"
+      },
+      {
+        "name": "Paraben-Free",
+        "value": "Yes"
+      },
+      {
+        "name": "Sulfate-Free",
+        "value": "Yes"
+      },
+      {
+        "name": "Dermatologist Tested",
+        "value": "Yes"
+      }
+    ],
+    "ingredientsList": "Aqua, L-Ascorbic Acid (Vitamin C), Propanediol, Glycerin, Sodium Hyaluronate (Hyaluronic Acid), Tocopherol (Vitamin E), Ferulic Acid, Phenoxyethanol, Ethylhexylglycerin, Xanthan Gum, Disodium EDTA.",
+    "howToUse": [
+      "After cleansing and toning, apply 3-5 drops of serum to your face, neck, and décolletage.",
+      "Gently massage into skin until fully absorbed.",
+      "Follow with your favorite moisturizer and SPF during the day.",
+      "Use daily, morning and/or night. For best results, use consistently."
+    ],
+    "warnings": [
+      "For external use only.",
+      "Avoid direct contact with eyes. If contact occurs, rinse thoroughly with water.",
+      "Discontinue use if irritation occurs.",
+      "Store in a cool, dark place away from direct sunlight.",
+      "Keep out of reach of children."
+    ],
+    "reviews": {
+      "averageRating": 4.8,
+      "numberOfReviews": 187,
+      "items": [
+        {
+          "reviewId": "REV001",
+          "reviewerName": "Sarah M.",
+          "rating": 5,
+          "title": "My Holy Grail Vitamin C!",
+          "comment": "I've tried so many Vitamin C serums, but this one is truly different. My skin looks so much brighter and feels firmer after just a few weeks. Dark spots are fading, and I've received compliments on my 'glow'! Highly recommend.",
+          "date": "2023-10-26"
+        },
+        {
+          "reviewId": "REV002",
+          "reviewerName": "David L.",
+          "rating": 4,
+          "title": "Effective and absorbs well",
+          "comment": "Noticeable improvement in skin tone and texture. It absorbs quickly without feeling sticky, which is great for morning use. A bit pricey, but a little goes a long way.",
+          "date": "2023-10-20"
+        },
+        {
+          "reviewId": "REV003",
+          "reviewerName": "Emily R.",
+          "rating": 5,
+          "title": "Amazing brightening effect",
+          "comment": "My skin has never looked so luminous! The dullness is gone, and my complexion looks so much more even. I also love that it's vegan and cruelty-free.",
+          "date": "2023-10-15"
+        }
+      ]
+    },
+    "relatedProducts": [
+      {
+        "productId": "RLHYMO001",
+        "productName": "RadiantLabs HydraBoost Moisturizer",
+        "imageUrl": "https://example.com/images/hydraboost-moisturizer-thumb.jpg",
+        "price": 29.99
+      },
+      {
+        "productId": "RLRENE001",
+        "productName": "RadiantLabs Renewal Eye Cream",
+        "imageUrl": "https://example.com/images/renewal-eyecream-thumb.jpg",
+        "price": 34.5
+      },
+      {
+        "productId": "RLSUNP001",
+        "productName": "RadiantLabs Daily SPF 30 Sunscreen",
+        "imageUrl": "https://example.com/images/spf30-sunscreen-thumb.jpg",
+        "price": 22.0
+      }
+    ],
+    "seo": {
+      "title": "GlowBoost Vitamin C Serum | RadiantLabs | Brighten, Firm & Protect",
+      "description": "Shop RadiantLabs GlowBoost Vitamin C Serum to brighten skin, reduce fine lines, and boost collagen. Our 20% L-Ascorbic Acid serum is vegan, cruelty-free, and packed with antioxidants. Achieve a radiant glow!",
+      "keywords": "Vitamin C serum, brightening serum, anti-aging serum, skincare, hyaluronic acid, radiant skin, firming serum, RadiantLabs, L-Ascorbic Acid, dark spot corrector",
+      "canonicalUrl": "https://example.com/products/glowboost-vitamin-c-serum"
+    },
+    "shippingInformation": "Standard shipping within 3-5 business days. Free shipping on orders over $50.",
+    "returnPolicy": "30-day money-back guarantee. Product must be returned in its original condition. See full return policy for details."
+  },
+  "schemaOrgData": {
+    "@context": "http://schema.org",
+    "@type": "Product",
+    "name": "GlowBoost Vitamin C Serum",
+    "sku": "RL-GBVCS-30ML-01",
+    "mpn": "8765432109876",
+    "image": [
+      "https://example.com/images/glowboost/serum-front.jpg",
+      "https://example.com/images/glowboost/serum-texture.jpg",
+      "https://example.com/images/glowboost/serum-lifestyle.jpg"
+    ],
+    "description": "Transform your complexion with RadiantLabs GlowBoost Vitamin C Serum. This advanced formula delivers a powerful dose of 20% L-Ascorbic Acid, known for its exceptional antioxidant properties. It works tirelessly to combat free radicals, reduce the appearance of fine lines and wrinkles, and significantly brighten skin tone.",
+    "brand": {
+      "@type": "Brand",
+      "name": "RadiantLabs"
+    },
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "USD",
+      "price": "39.99",
+      "itemCondition": "http://schema.org/NewCondition",
+      "availability": "http://schema.org/InStock",
+      "url": "https://example.com/products/glowboost-vitamin-c-serum",
+      "seller": {
+        "@type": "Organization",
+        "name": "RadiantLabs"
+      }
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "reviewCount": "187"
+    },
+    "review": [
+      {
+        "@type": "Review",
+        "author": {
+          "@type": "Person",
+          "name": "Sarah M."
+        },
+        "datePublished": "2023-10-26",
+        "reviewRating": {
+          "@type": "Rating",
+          "ratingValue": "5"
+        },
+        "name": "My Holy Grail Vitamin C!",
+        "reviewBody": "I've tried so many Vitamin C serums, but this one is truly different. My skin looks so much brighter and feels firmer after just a few weeks. Dark spots are fading, and I've received compliments on my 'glow'! Highly recommend."
+      }
+    ]
+  },
+  "_meta": {
+    "generated_at": "2025-12-10T05:20:32.317751Z",
+    "version": "1.0"
+  }
+}
