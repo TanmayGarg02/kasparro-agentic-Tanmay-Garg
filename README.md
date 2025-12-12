@@ -1,127 +1,137 @@
 # README
 
-## Problem Statement
-Design and implement a modular agentic automation system that takes a single product dataset and produces structured machine readable content pages. The system must demonstrate multi agent workflows, reusable content logic, template based generation, and clear orchestration. The goal is to show system design and engineering ability rather than domain research.
+## 1. Problem Statement
+The goal is to design and implement a modular agentic automation system that takes a single product JSON file
+and generates three machine readable content pages. The system must demonstrate clean system design, small
+independent agents, template based generation, and a central orchestrator. The focus is on engineering structure
+rather than domain enrichment.
 
-## Solution Overview
-This project implements a linear agent pipeline that transforms one product object into three JSON pages. The pipeline uses small agents with single responsibilities and a central orchestrator that passes explicit payloads. The system produces:
-* An answered FAQ page
-* A product description page
-* A comparison page with a fictional competitor
+## 2. Solution Overview
+The system is built as a linear multi-agent pipeline. Each agent performs one responsibility and returns a validated Pydantic model.
+The system takes a product object and generates three structured outputs:
 
-All outputs are deterministic or grounded in product fields. The generator avoids external factual enrichment.
+1.  **FAQ Page**: An agent generates questions, and another answers them based on product data.
+2.  **Product Page**: A structured JSON summary of the product's key features.
+3.  **Comparison Page**: A comparison of the product against a randomly named, fictional competitor.
 
-## Scopes and Assumptions
-* Input is a single product JSON object with fixed fields
-* No external web calls are used to enrich facts
-* Fictional competitor is created only when a second product is not provided
-* All agents operate on structured data only
-* Output must be valid JSON and include minimal metadata
+The system is fully deterministic and grounded in the input product fields. No external web lookup or research is
+performed. The LLM is used only for language generation inside the provided templates.
 
-## System Design
+## 3. Scopes and Assumptions
+* The input is a single clean JSON object describing a product.
+* No external data enrichment is done.
+* The competitor product is fictional and auto generated.
+* All outputs must be valid JSON.
+* Agents do not share state. Everything is passed explicitly.
+* Templates define the shape of the final JSON outputs.
 
-### High level architecture
-The system is organized into three layers
-1. Data layer that stores the input product object
-2. Agent layer with small independent agents
-3. Orchestration layer that runs agents in sequence and writes outputs
+## 4. System Architecture
 
-Visual flow
-Product JSON → Orchestrator → Question Agent → FAQ Agent → Product Page Agent → Comparison Agent → Writer → Outputs
+### 4.1 Layered Architecture
+The project follows a three layer architecture
 
+1. Data Layer  
+   Holds the product.json file and validates it using a Pydantic product model.
 
-### Agent responsibilities
-* Question Agent
-  * Input product model
-  * Produce categorized question lists
-  * Output a simple JSON of categories and questions
-* FAQ Agent
-  * Input product model and question lists
-  * Produce fully answered, grouped FAQ JSON
-  * Enforce safe and concise language using product fields only
-* Product Page Agent
-  * Input product model
-  * Produce a structured product page JSON with highlights ingredients usage safety and price
-* Comparison Agent
-  * Input product model and optional product B
-  * If product B is missing the agent generates a realistic fictional competitor
-  * Produce a structured comparison JSON listing similarities differences and recommendations
-* Writer
-  * Persist final JSON files
-  * Add generation metadata such as ISO timestamp and system version
+2. Agent Layer  
+   Contains four independent agents  
+   * Question Agent  
+   * FAQ Agent  
+   * Product Page Agent  
+   * Comparison Agent  
 
-### Data model
-* Canonical product model fields
-  * product_name string
-  * concentration string
-  * skin_type array of strings
-  * key_ingredients array of strings
-  * benefits array of strings
-  * how_to_use string
-  * side_effects string
-  * price numeric
+3. Orchestrator Layer  
+   Loads product data, calls each agent in sequence, bundles and returns outputs.
 
-All agents accept and return plain JSON compatible objects based on this model.
+### 4.2 Workflow
+Product JSON  
+→ Question Agent  
+→ FAQ Agent  
+→ Product Page Agent  
+→ Comparison Agent  
+→ Orchestrator → Final Output
 
-### Template engine
-Templates are simple JSON schemas stored in templates files. Each template defines required fields and where block outputs are placed. Templates are rendered by a template agent that composes block objects into the final shape.
+### 4.3 Design Principles
+* Each agent has one clear responsibility.
+* No hidden global state.
+* All LLM calls use structured templates.
+* Agents validate and extract JSON using regex before parsing.
+* Agent outputs are validated against strict Pydantic models.
 
-### Orchestration
-The orchestrator performs these steps
-1. Load and validate the product JSON into the canonical model
-2. Call Question Agent to obtain categorized questions
-3. Call FAQ Agent to generate answered FAQ JSON
-4. Call Product Page Agent to build the product page JSON
-5. Call Comparison Agent to build comparison JSON with product B or with a generated competitor
-6. Call Writer to persist faq.json product_page.json and comparison_page.json
+## 5. Agents (Final Behaviour)
 
-### Error handling and validation
-* All agents validate inputs and raise explicit errors for missing required fields
-* Agents sanitize model outputs by stripping markdown wrappers then validating JSON
-* The orchestrator catches agent level errors logs them and fails with a clear message
+### 5.1 Question Agent
+*   Reads product fields to generate 10 meaningful, product-specific questions.
+*   Returns a validated `QuestionList` Pydantic model.
 
-### Testing and evaluation
-* Unit tests for
-  * parsing and canonical model validation
-  * block generation functions
-  * template rendering functions
-* Integration test that runs the orchestrator end to end and validates output JSON against schemas
-* Failure mode tests include invalid input malformed JSON and simulated empty agent response
+### 5.2 FAQ Agent
+*   Takes the list of generated questions and the product data.
+*   Uses a highly explicit prompt to produce factual answers grounded only in the product fields.
+*   Returns a validated `FAQOutput` Pydantic model.
 
-### Security and secrets
-* API keys are loaded from environment variables and never committed
-* If an LLM is used the system validates responses before writing outputs
+### 5.3 Product Page Agent
+*   Generates a clean, structured JSON summary of the product.
+*   Returns a validated `ProductPage` Pydantic model.
 
-## How to run locally
-1. Create a virtual environment and install dependencies
-2. Populate data with the product JSON in data folder
-3. Run the orchestrator
-python -m core.orchestrator
+### 5.4 Comparison Agent
+*   Generates a fictional competitor with a name randomly selected from a predefined list (e.g., "Face Serum", "Radiant Glow Serum").
+*   Compares the real and fictional products on similarities, differences, and recommendations.
+*   Returns a validated `ComparisonPage` Pydantic model.
 
-pgsql
-Copy code
-4. Check outputs in the outputs folder
+## 6. Data Models (Pydantic)
+The system uses Pydantic models for strict data validation at each step.
 
-## Evaluation checklist
-* All three JSON pages are produced and valid
-* Each FAQ question has a non empty answer
-* Comparison page exists and includes a competitor object and comparison fields
-* System uses modular agents with no hidden global state
-* Tests cover key logic and transformations
+*   `Product`: The canonical model for the input product data.
+*   `QuestionList`: A model for the list of questions generated by the `QuestionAgent`.
+*   `FAQItem`: A model for a single question-answer pair.
+*   `FAQList`: A model containing a list of `FAQItem` objects.
+*   `FAQOutput`: The final, nested model for the FAQ page.
+*   `ProductPage`: The model for the structured product page.
+*   `ComparisonPage`: The model for the product comparison page.
 
-## Optional diagrams and notes
-Simple sequence diagram
-1. Orchestrator invokes Question Agent
-2. Orchestrator invokes FAQ Agent with question payload
-3. Orchestrator invokes Product Page Agent
-4. Orchestrator invokes Comparison Agent
-5. Writer persists outputs
+## 7. Template Engine
+Templates are stored inside the templates folder.  
+Each template is a text file that describes the target JSON shape and placeholders.  
+Agents load templates and pass structured product fields into the template.
 
-End of document
-EOF
+Templates used  
 
+* question_template.txt  
+* faq_template.txt  
+* product_page_template.txt  
+* comparison_template.txt  
 
+## 8. Orchestration (`run_orchestration`)
+A standalone `run_orchestration` function handles the entire pipeline:
 
+1.  Initializes the `Orchestrator` class, which in turn initializes all agents.
+2.  Calls the `Orchestrator.run()` method, which executes the agents in sequence:
+    *   `QuestionGeneratorAgent` -> `QuestionList` model
+    *   `FAQAgent` -> `FAQOutput` model
+    *   `ProductPageAgent` -> `ProductPage` model
+    *   `ComparisonAgent` -> `ComparisonPage` model
+3.  The `run()` method returns a dictionary of Pydantic models.
+4.  The `run_orchestration` function then calls a `Writer` class to save the `.model_dump()` output of each model to a separate JSON file in the `outputs/` directory.
 
+## 9. Execution
+You run the project using
 
+python main.py
 
+This loads the product, runs all agents and prints the final JSON outputs.
+
+## 10. Security
+*   API keys are loaded from a `.env` file using `python-dotenv`.
+*   The system is configured to use the **Groq API** key (`GROQ_API_KEY`).
+*   Keys are never committed to the repository.
+
+## 11. Evaluation Criteria
+* All three output pages are valid JSON.
+* FAQ contains answers for each generated question.
+* Comparison includes a non Pro Max fictional competitor.
+* Agents are modular and stateless.
+* Orchestrator is explicit and linear.
+* Templates define the shape of JSON outputs.
+* No ambiguous or hidden logic.
+
+# End of Document
