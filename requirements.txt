@@ -1,6 +1,7 @@
-google-generativeai
-requests
-python-dotenv
-rich
+langchain
+langchain-core
+langchain-google-genai
+fastapi
+uvicorn
 pydantic
-pytest
+python-dotenv

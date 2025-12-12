@@ -1,64 +1,70 @@
 # core/orchestrator.py
-import json
+
 from pathlib import Path
-from typing import Dict, Any
+import json
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from core.models import Product
-from core.writer import write_all
-from agents.question_agent import QuestionGenerationAgent
 from agents.faq_agent import FAQAgent
 from agents.product_page_agent import ProductPageAgent
-from agents.comparison_agent import comparison_agent
+from agents.comparison_agent import ComparisonAgent
+from agents.question_agent import QuestionGeneratorAgent
 
-DATA_PATH = Path("data/product.json")
+
+class Writer:
+    def __init__(self, output_dir="outputs"):
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(exist_ok=True)
+
+    def write(self, filename: str, data: dict):
+        with open(self.output_dir / filename, "w") as f:
+            json.dump(data, f, indent=4)
 
 
 class Orchestrator:
-    def __init__(self, model="models/gemini-2.5-flash"):
-        self.model_name = model
-        self.question_agent = QuestionGenerationAgent(model=self.model_name)
-        self.faq_agent = FAQAgent(model=self.model_name)
-        self.product_agent = ProductPageAgent(model=self.model_name)
-        self.comparison_agent = comparison_agent
+    def __init__(self, data_path="data/product.json"):
+        self.data_path = Path(data_path)
+
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            raise ValueError("Missing GROQ_API_KEY in environment")
+
+        self.question_agent = QuestionGeneratorAgent(api_key)
+        self.faq_agent = FAQAgent(api_key)
+        self.page_agent = ProductPageAgent(api_key)
+        self.compare_agent = ComparisonAgent(api_key)
 
     def load_product(self) -> Product:
-        raw = json.loads(DATA_PATH.read_text(encoding="utf-8"))
-        product = Product(**raw)
-        return product
+        data = json.loads(self.data_path.read_text())
+        return Product(**data)
 
-    def run(self) -> Dict[str, Any]:
+    def run(self):
         product = self.load_product()
 
-        # 1. generate questions
-        questions = self.question_agent.run(product)
+        question_model = self.question_agent.generate_questions(product)
 
-        # 2. build FAQ using selected questions and product blocks
-        faq_obj = self.faq_agent.build_faq(product, questions)
-
-        # 3. build product page JSON
-        product_page_obj = self.product_agent.build_page(product)
-
-        # 4. build deterministic comparison (with imaginary product B)
-        comparison_obj = self.comparison_agent.run(product, product_b=None)
-
-        # 5. write outputs
-        paths = write_all(faq_obj, product_page_obj, comparison_obj)
+        faq = self.faq_agent.build_faq(product, question_model.questions)
+        page = self.page_agent.build_page(product)
+        compare = self.compare_agent.compare(product)
 
         return {
-            "status": "success",
-            "paths": paths,
-            "summary": {
-                "questions_count": sum(len(v) for v in questions.values()) if isinstance(questions, dict) else None
-            }
+            "questions": question_model.model_dump(),
+            "faq": faq.model_dump(),
+            "product_page": page.model_dump(),
+            "comparison": compare.model_dump(),
         }
 
 
-def main():
-    orchestrator = Orchestrator()
+def run_orchestration(input_path: str):
+    orchestrator = Orchestrator(input_path)
     result = orchestrator.run()
-    print("Orchestration complete")
-    print(json.dumps(result, indent=2))
 
+    writer = Writer()
+    writer.write("faq.json", result["faq"])
+    writer.write("product_page.json", result["product_page"])
+    writer.write("comparison_page.json", result["comparison"])
 
-if __name__ == "__main__":
-    main()
+    return result

@@ -1,51 +1,44 @@
-from google import generativeai as genai
-from dotenv import load_dotenv
-load_dotenv()
+# agents/question_agent.py
 
-import google.generativeai as genai
-import os
-
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-from core.models import Product
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from pathlib import Path
 import json
+import re
+from core.models import Product, QuestionList
 
+class QuestionGeneratorAgent:
+    def __init__(self, api_key: str):
+        self.llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            temperature=0.0,
+            api_key=api_key
+        )
 
-class QuestionGenerationAgent:
-    def __init__(self, model="models/gemini-2.5-flash"):
-        self.model = model
+        template_str = Path("templates/question_template.txt").read_text()
 
-    def run(self, product: Product):
-        prompt = f"""
-        You are an AI system generating customer questions about a skincare product.
-        Generate at least 15 questions grouped into categories:
-        Informational, Safety, Usage, Purchase, Comparison.
+        self.prompt = PromptTemplate(
+            template=template_str,
+            input_variables=["product_json"]
+        )
 
-        Product Data:
-        {product.model_dump_json()}
+        self.parser = StrOutputParser()
 
-        Output JSON ONLY in this structure:
-        {{
-            "Informational": ["question 1", "question 2", ...],
-            "Safety": ["question 1", "question 2", ...],
-            "Usage": ["question 1", "question 2", ...],
-            "Purchase": ["question 1", "question 2", ...],
-            "Comparison": ["question 1", "question 2", ...]
-        }}
-        """
+    def generate_questions(self, product: Product) -> QuestionList:
+        product_json_str = product.model_dump_json(indent=2)
 
-        model = genai.GenerativeModel(self.model)
-        response = model.generate_content(prompt)
-        
-        # Extract the text from the response
-        response_text = response.text
-        
-        # Clean the response to ensure it's valid JSON
-        response_text = response_text.strip()
-        if response_text.startswith('```json'):
-            response_text = response_text[7:]
-        if response_text.endswith('```'):
-            response_text = response_text[:-3]
-        response_text = response_text.strip()
-        
-        return json.loads(response_text)
+        chain = self.prompt | self.llm | self.parser
+
+        result = chain.invoke({"product_json": product_json_str})
+
+        match = re.search(r'\[.*\]', result, re.DOTALL)
+        if not match:
+            match = re.search(r'\{.*\}', result, re.DOTALL)
+            if not match:
+                raise ValueError("Could not find a JSON list in the response")
+
+        # The model is expected to return a list of strings.
+        # We load it and then validate it with our Pydantic model.
+        questions_list = json.loads(match.group(0))
+        return QuestionList(questions=questions_list)

@@ -1,30 +1,38 @@
 # agents/product_page_agent.py
+
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from pathlib import Path
 import json
 import re
-import google.generativeai as genai
+from core.models import Product, ProductPage
 
 class ProductPageAgent:
-    def __init__(self, model="models/gemini-2.5-flash"):
-        self.model = model
+    def __init__(self, api_key: str):
+        self.llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            temperature=0.0,
+            api_key=api_key
+        )
 
-    def build_page(self, product):
-        product_name = getattr(product, "product_name", "Unknown Product")
-        prompt = f"Generate complete product page JSON for: {product_name}"
+        template = Path("templates/product_page_template.txt").read_text()
 
-        response = genai.GenerativeModel(self.model).generate_content(prompt)
+        self.prompt = PromptTemplate(
+            template=template,
+            input_variables=["product_json"]
+        )
 
-        text = response.text.strip()
+    def build_page(self, product: Product) -> ProductPage:
+        chain = self.prompt | self.llm | StrOutputParser()
+        product_json_str = product.model_dump_json(indent=2)
 
-        # Remove triple backticks if present
-        text = re.sub(r"^```json\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
+        result = chain.invoke({"product_json": product_json_str})
 
-        if not text:
-            raise ValueError("Received empty response from the model for product page")
+        match = re.search(r'\{.*\}', result, re.DOTALL)
+        if not match:
+            raise ValueError("Could not find a JSON object in the response")
 
-        try:
-            page_json = json.loads(text)
-        except json.JSONDecodeError:
-            raise ValueError(f"Response is not valid JSON: {text}")
-
-        return page_json
+        # Validate the data with the Pydantic model
+        page_data = json.loads(match.group(0))
+        return ProductPage(**page_data)

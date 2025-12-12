@@ -1,102 +1,63 @@
 # agents/comparison_agent.py
 
+from langchain_groq import ChatGroq
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from pathlib import Path
 import json
 import re
-import google.generativeai as genai
-
+import random
+from core.models import Product, ComparisonPage
 
 class ComparisonAgent:
-    def __init__(self, model="models/gemini-2.5-flash"):
-        self.model = model
+    def __init__(self, api_key: str):
+        self.llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
+            temperature=0.0,
+            api_key=api_key
+        )
 
-    def build_prompt(self, product, product_b=None):
-        """
-        Build the prompt used for generating the comparison JSON.
-        If product_b is None, the model should invent a realistic competitor.
-        """
+        template = Path("templates/comparison_template.txt").read_text()
 
-        product_a_name = getattr(product, "product_name", "Product A")
+        self.prompt = PromptTemplate(
+            template=template,
+            input_variables=["product_a", "product_b"]
+        )
 
-        if product_b:
-            product_b_name = getattr(product_b, "product_name", "Product B")
+    def compare(self, product: Product) -> ComparisonPage:
+        product_a_json = product.model_dump_json(indent=2)
 
-            return f"""
-You are a product comparison engine. Compare these two skincare products and return JSON only.
+        # Generate a more creative fictional competitor
+        competitor_names = [
+            "Radiant Glow Serum",
+            "HydraBoost Elixir",
+            "ClearSkin Solution",
+            "Youthful Vibe Tonic",
+            "PureBalance Formula",
+            "Face Serum"
+        ]
+        competitor_name = random.choice(competitor_names)
 
-PRODUCT A:
-{json.dumps(product.dict(), indent=2)}
+        product_b = {
+            "product_name": competitor_name,
+            "key_ingredients": product.key_ingredients[:],
+            "price": (product.price or 500) + 150,
+            "benefits": ["Advanced hydration", "All-day moisture", "Silky finish"]
+        }
 
-PRODUCT B:
-{json.dumps(product_b.dict(), indent=2)}
+        product_b_json = json.dumps(product_b, indent=2)
 
-Return JSON: {{
-  "product_a": "...",
-  "product_b": "...",
-  "similarities": [...],
-  "differences": [...],
-  "which_is_better_for": {{
-      "oily_skin": "...",
-      "dry_skin": "...",
-      "sensitive_skin": "..."
-  }}
-}}
-""".strip()
+        chain = self.prompt | self.llm | StrOutputParser()
 
-        else:
-            # No product B, create a competitor yourself
-            return f"""
-You are a skincare comparison expert. You are given PRODUCT A. 
-Generate PRODUCT B yourself as a realistic competitor based on the same category.
+        result = chain.invoke({
+            "product_a": product_a_json,
+            "product_b": product_b_json
+        })
 
-PRODUCT A:
-{json.dumps(product.dict(), indent=2)}
+        match = re.search(r'\{.*\}', result, re.DOTALL)
+        if not match:
+            raise ValueError("Could not find a JSON object in the response")
 
-TASK:
-1. Create a fictional PRODUCT B with similar category and target skin types.
-2. Then give a structured comparison.
-
-Return JSON only, in this format:
-
-{{
-  "product_a": "{product_a_name}",
-  "product_b": "Imaginary Competitor Name",
-  "competitor_details": {{
-      "concentration": "...",
-      "skin_type": [...],
-      "benefits": [...],
-      "price": ...
-  }},
-  "similarities": [...],
-  "differences": [...],
-  "which_is_better_for": {{
-      "oily_skin": "...",
-      "dry_skin": "...",
-      "sensitive_skin": "..."
-  }}
-}}
-""".strip()
-
-    def clean_response(self, text: str) -> str:
-        """Remove unwanted markdown markers before json.loads."""
-        text = text.strip()
-        text = re.sub(r"^```json\s*", "", text)
-        text = re.sub(r"^```\s*", "", text)
-        text = re.sub(r"\s*```$", "", text)
-        return text.strip()
-
-    def run(self, product, product_b=None):
-        prompt = self.build_prompt(product, product_b)
-        response = genai.GenerativeModel(self.model).generate_content(prompt)
-
-        if not response.text or response.text.strip() == "":
-            raise ValueError("Comparison agent returned empty response")
-
-        cleaned = self.clean_response(response.text)
-
-        try:
-            return json.loads(cleaned)
-        except json.JSONDecodeError:
-            raise ValueError(f"Comparison response is not valid JSON: {cleaned}")
-
-
-comparison_agent = ComparisonAgent()
+        # Validate the data with the Pydantic model
+        comparison_data = json.loads(match.group(0))
+        return ComparisonPage(**comparison_data)

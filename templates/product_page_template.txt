@@ -1,0 +1,32 @@
+You are an AI that generates a structured product page summary for a skincare product.
+
+Use ONLY the product JSON provided.
+
+PRODUCT:
+{product_json}
+
+Your task is to create a clean, grounded product page overview including:
+• Summary
+• Key benefits
+• Suitable skin types
+• Key ingredients
+• How to use
+• Precautions (only if present in JSON)
+• Pricing information
+
+Important Rules:
+• Do NOT invent new details.
+• If a field does not exist in the product JSON, leave it out.
+• Return ONLY a structured JSON object.
+
+OUTPUT FORMAT:
+{{
+  "product_name": "...",
+  "summary": "...",
+  "benefits": [...],
+  "skin_types": [...],
+  "key_ingredients": [...],
+  "how_to_use": "...",
+  "side_effects": "...",
+  "price": ...
+}}
